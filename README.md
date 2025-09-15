@@ -3,13 +3,13 @@
 API for managing ticket bookings for theatre service built with DRF.
 
 ## Database Structure
-![db_structure.png](db_structure.png)
+![db_structure.png](docs/db_structure.png)
 
 ## Installation
 
 1. Clone the repository
     ```bash
-    git clone https://github.com/username/theatre-api.git
+    git clone https://github.com/dimashevchukk/theatre-api
     cd theatre-api
    
 2. Create environment variables file  
