@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from theatre.models import (
     Actor,
@@ -119,6 +120,8 @@ class TicketViewSet(ModelViewSet):
         if self.action in ["list", "retrieve"]:
             return self.queryset.select_related(
                 "performance", "reservation"
+            ).filter(
+                reservation__user=self.request.user.id
             )
         return self.queryset
 
@@ -133,7 +136,9 @@ class ReservationViewSet(ModelViewSet):
 
     def get_queryset(self):
         if self.action in ["list", "retrieve"]:
-            return self.queryset.select_related(
+            return self.queryset.filter(
+                user=self.request.user.id
+            ).select_related(
                 "user"
             ).prefetch_related(
                 "tickets"
@@ -146,3 +151,8 @@ class ReservationViewSet(ModelViewSet):
         if self.action == "retrieve":
             return ReservationDetailSerializer
         return ReservationSerializer
+
+    def get_permissions(self):
+        if self.action in ["create", "list", "retrieve"]:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
