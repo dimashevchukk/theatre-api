@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
+from theatre.permissions import IsAdminOrReadOnly
 from theatre.models import (
     Actor,
     Genre,
@@ -130,6 +131,12 @@ class TicketViewSet(ModelViewSet):
             return TicketDetailSerializer
         return TicketSerializer
 
+    def get_permissions(self):
+        if self.action in ["list", "retrieve", "destroy"]:
+            return [IsAuthenticated()]
+        return [IsAdminOrReadOnly()]
+
+
 
 class ReservationViewSet(ModelViewSet):
     queryset = Reservation.objects.all()
@@ -153,6 +160,6 @@ class ReservationViewSet(ModelViewSet):
         return ReservationSerializer
 
     def get_permissions(self):
-        if self.action in ["create", "list", "retrieve"]:
+        if self.action in ["create", "list", "retrieve", "destroy"]:
             return [IsAuthenticated()]
         return [IsAdminUser()]

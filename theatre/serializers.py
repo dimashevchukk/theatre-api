@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -102,7 +103,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class TicketDetailSerializer(TicketSerializer):
-    performance = PerformanceDetailSerializer(read_only=True)
+    performance = PerformanceSerializer(read_only=True)
     reservation = serializers.SlugRelatedField(
         slug_field="created_at", read_only=True
     )
@@ -115,7 +116,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 
 class ReservationDetailSerializer(ReservationSerializer):
-    tickets = TicketDetailSerializer(many=True, read_only=True)
+    tickets = TicketSerializer(many=True, read_only=True)
 
 
 class ReservationCreateSerializer(ReservationSerializer):
@@ -132,6 +133,21 @@ class ReservationCreateSerializer(ReservationSerializer):
     class Meta(ReservationSerializer.Meta):
         fields = ["id", "created_at", "seats", "performance"]
 
+    def validate_seats(self, seats):
+        performance = self.initial_data.get("performance")
+        performance_obj = Performance.objects.get(pk=performance)
+
+        for seat in seats:
+            row = seat.get("row")
+            seat_num = seat.get("seat")
+            if Ticket.objects.filter(
+                    performance=performance_obj, row=row, seat=seat_num
+            ).exists():
+                raise serializers.ValidationError(f"Seat row {row}, seat {seat_num} is already taken.")
+
+        return seats
+
+    @transaction.atomic
     def create(self, validated_data):
         user = self.context["request"].user
         seats = validated_data.pop("seats")
