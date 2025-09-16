@@ -12,7 +12,7 @@ class Actor(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return f"Actor {self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name}"
 
     class Meta:
         ordering = ["first_name", "last_name"]
@@ -22,7 +22,7 @@ class Genre(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
-        return "Genre" + self.name
+        return self.name
 
     class Meta:
         ordering = ["name"]
@@ -31,9 +31,11 @@ class Genre(models.Model):
 class Play(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    actors = models.ManyToManyField(Actor, related_name="plays")
+    genres = models.ManyToManyField(Genre, related_name="plays")
 
     def __str__(self):
-        return f"Play {self.title}, {self.description[:30]}"
+        return self.title
 
     class Meta:
         ordering = ["title"]
@@ -49,7 +51,7 @@ class TheatreHall(models.Model):
         return self.rows * self.seats_in_row
 
     def __str__(self):
-        return f"Theatre Hall {self.name}, capacity {self.capacity}"
+        return self.name
 
     class Meta:
         ordering = ["name"]
@@ -65,7 +67,7 @@ class Performance(models.Model):
     show_time = models.DateTimeField()
 
     def __str__(self):
-        return f"Performance ({self.play}, {self.theatre_hall}, {self.show_time})"
+        return f"{self.play} at {self.show_time}"
 
     class Meta:
         ordering = ["-show_time"]
@@ -78,12 +80,10 @@ class Performance(models.Model):
 
 class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Reservation of {self.user} created at {self.created_at}"
+        return f"{self.user} at {self.created_at}"
 
     class Meta:
         ordering = ["-created_at"]
@@ -100,9 +100,7 @@ class Ticket(models.Model):
     )
 
     def __str__(self):
-        return (
-            f"Ticket {self.performance} (row: {self.row}, seat: {self.seat}, {self.reservation})"
-        )
+        return f"row: {self.row}, seat: {self.seat}"
 
     class Meta:
         ordering = ["row", "seat"]
