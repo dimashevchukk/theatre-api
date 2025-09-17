@@ -137,7 +137,6 @@ class TicketViewSet(ModelViewSet):
         return [IsAdminOrReadOnly()]
 
 
-
 class ReservationViewSet(ModelViewSet):
     queryset = Reservation.objects.all()
 
