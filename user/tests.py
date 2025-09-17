@@ -17,9 +17,7 @@ class RegistrationTests(APITestCase):
             "password": "testpassword",
         }
 
-        response = self.client.post(
-            reverse("user:create"), data=data
-        )
+        response = self.client.post(reverse("user:create"), data=data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(User.objects.filter(username="testuser").exists())
@@ -30,9 +28,7 @@ class RegistrationTests(APITestCase):
             "password": "test",
         }
 
-        response = self.client.post(
-            reverse("user:create"), data=data
-        )
+        response = self.client.post(reverse("user:create"), data=data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(User.objects.filter(username="testuser").exists())
@@ -42,8 +38,7 @@ class LoginTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="testuser",
-            password="testpassword"
+            username="testuser", password="testpassword"
         )
         refresh = RefreshToken.for_user(self.user)
         self.access_token = str(refresh.access_token)
@@ -54,9 +49,7 @@ class LoginTests(APITestCase):
             "password": "testpassword",
         }
 
-        response = self.client.post(
-            reverse("user:token_obtain_pair"), data=data
-        )
+        response = self.client.post(reverse("user:token_obtain_pair"), data=data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
@@ -68,9 +61,7 @@ class LoginTests(APITestCase):
             "password": "invalidpassword",
         }
 
-        response = self.client.post(
-            reverse("user:token_obtain_pair"), data=data
-        )
+        response = self.client.post(reverse("user:token_obtain_pair"), data=data)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertNotIn("access", response.data)

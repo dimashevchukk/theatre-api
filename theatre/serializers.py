@@ -2,7 +2,15 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
-from theatre.models import Actor, Genre, Play, TheatreHall, Performance, Ticket, Reservation
+from theatre.models import (
+    Actor,
+    Genre,
+    Play,
+    TheatreHall,
+    Performance,
+    Ticket,
+    Reservation,
+)
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -67,9 +75,7 @@ class TheatreHallDetailSerializer(TheatreHallSerializer):
     performances = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta(TheatreHallSerializer.Meta):
-        fields = TheatreHallSerializer.Meta.fields + [
-            "capacity", "performances"
-        ]
+        fields = TheatreHallSerializer.Meta.fields + ["capacity", "performances"]
 
 
 class PerformanceSerializer(serializers.ModelSerializer):
@@ -79,16 +85,12 @@ class PerformanceSerializer(serializers.ModelSerializer):
 
     def validate_show_time(self, show_time):
         if show_time < timezone.now():
-            raise serializers.ValidationError(
-                "Show time cannot be in the past."
-            )
+            raise serializers.ValidationError("Show time cannot be in the past.")
         return show_time
 
 
 class PerformanceListSerializer(PerformanceSerializer):
-    theatre_hall = serializers.SlugRelatedField(
-        slug_field="name", read_only=True
-    )
+    theatre_hall = serializers.SlugRelatedField(slug_field="name", read_only=True)
 
 
 class PerformanceDetailSerializer(PerformanceSerializer):
@@ -104,9 +106,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class TicketDetailSerializer(TicketSerializer):
     performance = PerformanceSerializer(read_only=True)
-    reservation = serializers.SlugRelatedField(
-        slug_field="created_at", read_only=True
-    )
+    reservation = serializers.SlugRelatedField(slug_field="created_at", read_only=True)
 
 
 class ReservationSerializer(serializers.ModelSerializer):
@@ -121,10 +121,7 @@ class ReservationDetailSerializer(ReservationSerializer):
 
 class ReservationCreateSerializer(ReservationSerializer):
     seats = serializers.ListField(
-        child=serializers.DictField(
-            child=serializers.IntegerField()
-        ),
-        write_only=True
+        child=serializers.DictField(child=serializers.IntegerField()), write_only=True
     )
     performance = serializers.PrimaryKeyRelatedField(
         queryset=Performance.objects.all(), write_only=True
@@ -141,9 +138,11 @@ class ReservationCreateSerializer(ReservationSerializer):
             row = seat.get("row")
             seat_num = seat.get("seat")
             if Ticket.objects.filter(
-                    performance=performance_obj, row=row, seat=seat_num
+                performance=performance_obj, row=row, seat=seat_num
             ).exists():
-                raise serializers.ValidationError(f"Seat row {row}, seat {seat_num} is already taken.")
+                raise serializers.ValidationError(
+                    f"Seat row {row}, seat {seat_num} is already taken."
+                )
 
         return seats
 
@@ -152,9 +151,7 @@ class ReservationCreateSerializer(ReservationSerializer):
         user = self.context["request"].user
         seats = validated_data.pop("seats")
         performance = validated_data.pop("performance")
-        reservation = Reservation.objects.create(
-            user=user, **validated_data
-        )
+        reservation = Reservation.objects.create(user=user, **validated_data)
 
         tickets = []
         for seat in seats:
@@ -166,7 +163,7 @@ class ReservationCreateSerializer(ReservationSerializer):
                     reservation=reservation,
                     performance=performance,
                     row=row,
-                    seat=seat_num
+                    seat=seat_num,
                 )
             )
 

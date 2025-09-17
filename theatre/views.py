@@ -101,9 +101,7 @@ class PerformanceViewSet(ModelViewSet):
 
     def get_queryset(self):
         if self.action in ["list", "retrieve"]:
-            return self.queryset.select_related(
-                "theatre_hall", "play"
-            )
+            return self.queryset.select_related("theatre_hall", "play")
         return self.queryset
 
     def get_serializer_class(self):
@@ -119,9 +117,7 @@ class TicketViewSet(ModelViewSet):
 
     def get_queryset(self):
         if self.action in ["list", "retrieve"]:
-            return self.queryset.select_related(
-                "performance", "reservation"
-            ).filter(
+            return self.queryset.select_related("performance", "reservation").filter(
                 reservation__user=self.request.user.id
             )
         return self.queryset
@@ -142,12 +138,10 @@ class ReservationViewSet(ModelViewSet):
 
     def get_queryset(self):
         if self.action in ["list", "retrieve"]:
-            return self.queryset.filter(
-                user=self.request.user.id
-            ).select_related(
-                "user"
-            ).prefetch_related(
-                "tickets"
+            return (
+                self.queryset.filter(user=self.request.user.id)
+                .select_related("user")
+                .prefetch_related("tickets")
             )
         return self.queryset
 
